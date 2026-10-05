@@ -413,13 +413,11 @@ void Planejador::ler(const std::string &arq_pontos,
 Ponto Planejador::getPonto(const IDPonto &Id) const
 {
   // Procura um ponto que corresponde aa Id do parametro
-  /* ***********  /
-  /  FALTA FAZER  /
-  /  *********** */
+  auto itr = find(pontos.begin(), pontos.end(), Id);
   // Em caso de sucesso, retorna o ponto encontrado
-  /* ***********  /
-  /  FALTA FAZER  /
-  /  *********** */
+  if (itr != pontos.end())
+    return *itr;
+
   // Se nao encontrou, gera excecao
   throw invalid_argument("getPonto: invalid IDPonto parameter");
 }
@@ -430,13 +428,12 @@ Ponto Planejador::getPonto(const IDPonto &Id) const
 Rota Planejador::getRota(const IDRota &Id) const
 {
   // Procura uma rota que corresponde aa Id do parametro
-  /* ***********  /
-  /  FALTA FAZER  /
-  /  *********** */
+  auto itr = find(rotas.begin(), rotas.end(), Id);
+  
   // Em caso de sucesso, retorna a rota encontrada
-  /* ***********  /
-  /  FALTA FAZER  /
-  /  *********** */
+  if (itr != rotas.end())
+    return *itr;
+
   // Se nao encontrou, gera excecao
   throw invalid_argument("getRota: invalid IDRota parameter");
 }

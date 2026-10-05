@@ -1,0 +1,51 @@
+name: Teste de leitura
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testar-leitura:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: Planejador
+
+    steps:
+      - name: Obter arquivos do repositorio
+        uses: actions/checkout@v5
+
+      - name: Compilar teste e programa principal
+        run: |
+          mkdir -p build
+
+          g++ -std=c++11 -Wall -Wextra -Wpedantic \
+            planejador.cpp teste.cpp \
+            -o build/teste-leitura
+
+          g++ -std=c++11 -Wall -Wextra -Wpedantic \
+            planejador.cpp planejador-main.cpp \
+            -o build/planejador
+
+      - name: Executar e verificar testes de leitura
+        run: |
+          ./build/teste-leitura 2>&1 | tee build/resultado-leitura.txt
+
+          if grep -q 'ERRO' build/resultado-leitura.txt; then
+            echo "O teste do professor relatou uma falha."
+            exit 1
+          fi
+
+          grep -q 'OK! Arquivos base lidos' build/resultado-leitura.txt
+
+          test "$(grep -c 'OK! Mesmos pontos e rotas' build/resultado-leitura.txt)" -eq 2
+
+          test "$(grep -c 'OK (detectou erro e nao alterou conteudo)' build/resultado-leitura.txt)" -eq 48
+
+          echo "Todos os casos esperados do teste de leitura passaram."
