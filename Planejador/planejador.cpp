@@ -1,85 +1,87 @@
 #include "planejador.h"
 #include <stdexcept>
-#include <cmath>     /* sin, cos, etc */
-#include <cctype>    /* isspace */
+#include <cmath>  /* sin, cos, etc */
+#include <cctype> /* isspace */
 #include <fstream>
-/* ACRESCENTE SE NECESSARIO */
-
+#include <algorithm>
 
 using namespace std;
 
 /* *************************
-   * CLASSE IDPONTO        *
-   ************************* */
+ * CLASSE IDPONTO        *
+ ************************* */
 
 /// Atribuicao de string
 /// NAO DEVE SER MODIFICADA
-void IDPonto::set(string&& S)
+void IDPonto::set(string &&S)
 {
-  t=move(S);
-  if (!valid()) t.clear();
+  t = move(S);
+  if (!valid())
+    t.clear();
 }
 
 /* *************************
-   * CLASSE IDROTA         *
-   ************************* */
+ * CLASSE IDROTA         *
+ ************************* */
 
 /// Atribuicao de string
 /// NAO DEVE SER MODIFICADA
-void IDRota::set(string&& S)
+void IDRota::set(string &&S)
 {
-  t=move(S);
-  if (!valid()) t.clear();
+  t = move(S);
+  if (!valid())
+    t.clear();
 }
 
 /* *************************
-   * CLASSE PONTO          *
-   ************************* */
+ * CLASSE PONTO          *
+ ************************* */
 
 /// Impressao em console
 /// NAO DEVE SER MODIFICADA
-ostream& operator<<(ostream& X, const Ponto& P)
+ostream &operator<<(ostream &X, const Ponto &P)
 {
-  X << P.id << '\t' << P.nome << " (" <<P.latitude << ',' << P.longitude << ')';
+  X << P.id << '\t' << P.nome << " (" << P.latitude << ',' << P.longitude << ')';
   return X;
 }
 
 /// Distancia entre 2 pontos (formula de haversine)
 /// NAO DEVE SER MODIFICADA
-double Ponto::distancia(const Ponto& P) const
+double Ponto::distancia(const Ponto &P) const
 {
   // Gera excecao se pontos invalidos
   if (!valid() || !P.valid())
     throw invalid_argument("distancia: ponto(s) invalido(s)");
 
   // Tratar logo pontos identicos
-  if (id == P.id) return 0.0;
+  if (id == P.id)
+    return 0.0;
   // Constantes
   static const double MY_PI = 3.14159265358979323846;
   static const double R_EARTH = 6371.0;
   // Conversao para radianos
-  double lat1 = MY_PI*this->latitude/180.0;
-  double lat2 = MY_PI*P.latitude/180.0;
-  double lon1 = MY_PI*this->longitude/180.0;
-  double lon2 = MY_PI*P.longitude/180.0;
+  double lat1 = MY_PI * this->latitude / 180.0;
+  double lat2 = MY_PI * P.latitude / 180.0;
+  double lon1 = MY_PI * this->longitude / 180.0;
+  double lon2 = MY_PI * P.longitude / 180.0;
   // Seno das diferencas
-  double sin_dlat2 = sin((lat2-lat1)/2.0);
-  double sin_dlon2 = sin((lon2-lon1)/2.0);
+  double sin_dlat2 = sin((lat2 - lat1) / 2.0);
+  double sin_dlon2 = sin((lon2 - lon1) / 2.0);
   // Quadrado do seno do angulo entre os pontos
-  double sin2_ang = sin_dlat2*sin_dlat2 + cos(lat1)*cos(lat2)*sin_dlon2*sin_dlon2;
+  double sin2_ang = sin_dlat2 * sin_dlat2 + cos(lat1) * cos(lat2) * sin_dlon2 * sin_dlon2;
   // Em vez de utilizar a funcao arcosseno, asin(sqrt(sin2_ang)),
   // vou utilizar a funcao arcotangente, menos sensivel a erros numericos.
   // Distancia entre os pontos
-  return 2.0*R_EARTH*atan2(sqrt(sin2_ang),sqrt(1-sin2_ang));
+  return 2.0 * R_EARTH * atan2(sqrt(sin2_ang), sqrt(1 - sin2_ang));
 }
 
 /* *************************
-   * CLASSE ROTA           *
-   ************************* */
+ * CLASSE ROTA           *
+ ************************* */
 
 /// Impressao em console
 /// NAO DEVE SER MODIFICADA
-ostream& operator<<(ostream& X, const Rota& R)
+ostream &operator<<(ostream &X, const Rota &R)
 {
   X << R.id << '\t' << R.nome << '\t' << R.comprimento << "km"
     << " [" << R.extremidade[0] << ',' << R.extremidade[1] << ']';
@@ -89,16 +91,18 @@ ostream& operator<<(ostream& X, const Rota& R)
 /// Retorna a outra extremidade da rota, a que nao eh o parametro.
 /// Gera excecao se o parametro nao for uma das extremidades da rota.
 /// NAO DEVE SER MODIFICADA
-IDPonto Rota::outraExtremidade(const IDPonto& ID) const
+IDPonto Rota::outraExtremidade(const IDPonto &ID) const
 {
-  if (extremidade[0]==ID) return extremidade[1];
-  if (extremidade[1]==ID) return extremidade[0];
+  if (extremidade[0] == ID)
+    return extremidade[1];
+  if (extremidade[1] == ID)
+    return extremidade[0];
   throw invalid_argument("outraExtremidade: invalid IDPonto parameter");
 }
 
 /* *************************
-   * CLASSE PLANEJADOR     *
-   ************************* */
+ * CLASSE PLANEJADOR     *
+ ************************* */
 
 /// Torna o mapa vazio
 /// NAO DEVE SER MODIFICADA
@@ -110,22 +114,22 @@ void Planejador::clear()
 
 /// Funcao auxiliar para eliminar eventuais separadores do final de uma string.
 /// NAO DEVE SER MODIFICADA
-void trim(string& S)
+void trim(string &S)
 {
-  while (!S.empty() && isspace(S.back())) S.pop_back();
+  while (!S.empty() && isspace(S.back()))
+    S.pop_back();
 }
 
 /// Leh um mapa dos arquivos arq_pontos e arq_rotas.
 /// Caso nao consiga ler dos arquivos, deixa o mapa inalterado e
 /// gera excecao ios_base::failure.
 /// Deve receber ACRESCIMOS
-void Planejador::ler(const std::string& arq_pontos,
-                     const std::string& arq_rotas)
+void Planejador::ler(const std::string &arq_pontos,
+                     const std::string &arq_rotas)
 {
   // Vetores temporarios para armazenamento dos Pontos e Rotas lidos.
-  /* ***********  /
-  /  FALTA FAZER  /
-  /  *********** */
+  vector<Ponto> pontos_lidos;
+  vector<Rota> rotas_lidas;
 
   // Leh os Pontos do arquivo e armazena no vetor temporario de Pontos.
   // Em caso de qualquer erro, gera excecao ios_base::failure com mensagem:
@@ -164,9 +168,80 @@ void Planejador::ler(const std::string& arq_pontos,
     //    | 3.9) Insere o Ponto lido no vetor temporario de Pontos
     // 4) Se nao foi lido nenhum Ponto, gera erro (codigo 10)
     // 5) Fecha o arquivo de Pontos
-    /* ***********  /
-    /  FALTA FAZER  /
-    /  *********** */
+    ifstream arquivo(arq_pontos);
+
+    if (!arquivo.is_open())
+      throw 1;
+
+    string S;
+
+    if (!getline(arquivo >> ws, S))
+      throw 2;
+
+    trim(S);
+
+    if (S != "ID;Nome;Latitude;Longitude")
+      throw 2;
+
+    arquivo >> ws;
+
+    while (!arquivo.eof())
+    {
+      Ponto P;
+
+      // Le a identificacao ate o ponto e virgula.
+      if (!getline(arquivo >> ws, S, ';'))
+        throw 3;
+
+      trim(S);
+
+      if (S.empty())
+        throw 3;
+
+      P.id.set(move(S));
+
+      // Le o nome ate o ponto e virgula.
+      if (!getline(arquivo >> ws, P.nome, ';'))
+        throw 4;
+
+      trim(P.nome);
+
+      if (P.nome.empty())
+        throw 4;
+
+      // Le a latitude.
+      if (!(arquivo >> P.latitude))
+        throw 5;
+
+      // Confere o separador entre latitude e longitude.
+      char separador;
+
+      if (!(arquivo >> separador) || separador != ';')
+        throw 6;
+
+      // Le a longitude.
+      if (!(arquivo >> P.longitude))
+        throw 7;
+
+      // Prepara a stream para o proximo registro.
+      arquivo >> ws;
+
+      // Verifica as regras de validade do ponto.
+      if (!P.valid())
+        throw 8;
+
+      // Rejeita uma identificacao que ja foi lida.
+      if (find(pontos_lidos.begin(), pontos_lidos.end(), P.id) != pontos_lidos.end())
+        throw 9;
+
+      // Guarda o ponto validado no vetor temporario.
+      pontos_lidos.push_back(move(P));
+    }
+
+    if (pontos_lidos.empty())
+      throw 10;
+
+    arquivo.close();
   }
   catch (int i)
   {
@@ -222,9 +297,101 @@ void Planejador::ler(const std::string& arq_pontos,
     //    | 3.11)Insere a Rota lida no vetor temporario de Rotas
     // 4) Se nao foi lido nenhuma Rota, gera erro (codigo 12)
     // 5) Fecha o arquivo de Rotas
-    /* ***********  /
-    /  FALTA FAZER  /
-    /  *********** */
+    ifstream arquivo(arq_rotas);
+
+    if (!arquivo.is_open())
+      throw 1;
+
+    // Le e confere o cabecalho.
+    string S;
+
+    if (!getline(arquivo >> ws, S))
+      throw 2;
+
+    trim(S);
+
+    if (S != "ID;Nome;Extremidade 1;Extremidade 2;Comprimento")
+      throw 2;
+
+    arquivo >> ws;
+
+    while (!arquivo.eof())
+    {
+      Rota R;
+
+      // Le a identificacao da rota.
+      if (!getline(arquivo >> ws, S, ';'))
+        throw 3;
+
+      trim(S);
+
+      if (S.empty())
+        throw 3;
+
+      R.id.set(move(S));
+
+      // Le o nome da rota.
+      if (!getline(arquivo >> ws, R.nome, ';'))
+        throw 4;
+
+      trim(R.nome);
+
+      if (R.nome.empty())
+        throw 4;
+
+      // Le a identificacao da primeira extremidade.
+      if (!getline(arquivo >> ws, S, ';'))
+        throw 5;
+
+      trim(S);
+
+      if (S.empty())
+        throw 5;
+
+      R.extremidade[0].set(move(S));
+
+      // Le a identificacao da segunda extremidade.
+      if (!getline(arquivo >> ws, S, ';'))
+        throw 6;
+
+      trim(S);
+
+      if (S.empty())
+        throw 6;
+
+      R.extremidade[1].set(move(S));
+
+      // Le o comprimento da rota.
+      if (!(arquivo >> R.comprimento))
+        throw 7;
+
+      arquivo >> ws;
+
+      // Confere a validade dos dados da rota.
+      if (!R.valid())
+        throw 8;
+
+      // Confere se a primeira extremidade existe no mapa.
+      if (find(pontos_lidos.begin(), pontos_lidos.end(),
+               R.extremidade[0]) == pontos_lidos.end())
+        throw 9;
+
+      // Confere se a segunda extremidade existe no mapa.
+      if (find(pontos_lidos.begin(), pontos_lidos.end(),
+               R.extremidade[1]) == pontos_lidos.end())
+        throw 10;
+
+      // Rejeita uma identificacao de rota repetida.
+      if (find(rotas_lidas.begin(), rotas_lidas.end(), R.id) != rotas_lidas.end())
+        throw 11;
+
+      rotas_lidas.push_back(move(R));
+    }
+
+    if (rotas_lidas.empty())
+      throw 12;
+
+    arquivo.close();
   }
   catch (int i)
   {
@@ -236,15 +403,14 @@ void Planejador::ler(const std::string& arq_pontos,
 
   // Faz os vetores de Pontos e Rotas do planejador assumirem o conteudo dos
   // vetores temporarios de Pontos e Rotas
-  /* ***********  /
-  /  FALTA FAZER  /
-  /  *********** */
+  pontos.swap(pontos_lidos);
+  rotas.swap(rotas_lidas);
 }
 
 /// Retorna um Ponto do mapa, passando a id como parametro.
 /// Se a id for inexistente, gera excecao.
 /// Deve receber ACRESCIMOS
-Ponto Planejador::getPonto(const IDPonto& Id) const
+Ponto Planejador::getPonto(const IDPonto &Id) const
 {
   // Procura um ponto que corresponde aa Id do parametro
   /* ***********  /
@@ -261,7 +427,7 @@ Ponto Planejador::getPonto(const IDPonto& Id) const
 /// Retorna um Rota do mapa, passando a id como parametro.
 /// Se a id for inexistente, gera excecao.
 /// Deve receber ACRESCIMOS
-Rota Planejador::getRota(const IDRota& Id) const
+Rota Planejador::getRota(const IDRota &Id) const
 {
   // Procura uma rota que corresponde aa Id do parametro
   /* ***********  /
@@ -294,9 +460,9 @@ Rota Planejador::getRota(const IDRota& Id) const
 /// mesmo quando nao existe caminho.
 /// Em caso de parametros de entrada invalidos ou de erro no algoritmo, gera excecao.
 /// Deve receber ACRESCIMOS.
-double Planejador::calculaCaminho(const IDPonto& id_origem,
-                                  const IDPonto& id_destino,
-                                  Caminho& C, int& NumAberto, int& NumFechado)
+double Planejador::calculaCaminho(const IDPonto &id_origem,
+                                  const IDPonto &id_destino,
+                                  Caminho &C, int &NumAberto, int &NumFechado)
 {
   // Comprimento total do caminho encontrado, a ser retornado pela funcao calculaCaminho.
   // Inicializado com valor -1, que significa caminho nao encontrado.
@@ -312,7 +478,8 @@ double Planejador::calculaCaminho(const IDPonto& id_origem,
   try
   {
     // Mapa vazio
-    if (empty()) throw 1;
+    if (empty())
+      throw 1;
 
     Ponto pt_origem, pt_destino;
     // Calcula os pontos que correspondem a id_origem e id_destino.
@@ -322,7 +489,7 @@ double Planejador::calculaCaminho(const IDPonto& id_origem,
       pt_origem = getPonto(id_origem);
       pt_destino = getPonto(id_destino);
     }
-    catch(...)
+    catch (...)
     {
       throw 2;
     }
@@ -335,7 +502,7 @@ double Planejador::calculaCaminho(const IDPonto& id_origem,
     /  FALTA FAZER  /
     /  *********** */
   }
-  catch(int i)
+  catch (int i)
   {
     string msg_err = "Erro " + to_string(i) + " no calculo do caminho\n";
     throw invalid_argument(msg_err);
