@@ -49,3 +49,12 @@ jobs:
           test "$(grep -c 'OK (detectou erro e nao alterou conteudo)' build/resultado-leitura.txt)" -eq 48
 
           echo "Todos os casos esperados do teste de leitura passaram."
+
+      - name: Compilar teste de caminhos
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic \
+            planejador.cpp teste-caminhos.cpp \
+            -o build/teste-caminhos
+
+      - name: Executar teste de caminhos
+        run: ./build/teste-caminhos

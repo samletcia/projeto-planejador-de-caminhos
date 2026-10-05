@@ -4,6 +4,7 @@
 #include <cctype> /* isspace */
 #include <fstream>
 #include <algorithm>
+#include <list>
 
 using namespace std;
 
@@ -429,7 +430,7 @@ Rota Planejador::getRota(const IDRota &Id) const
 {
   // Procura uma rota que corresponde aa Id do parametro
   auto itr = find(rotas.begin(), rotas.end(), Id);
-  
+
   // Em caso de sucesso, retorna a rota encontrada
   if (itr != rotas.end())
     return *itr;
@@ -444,9 +445,30 @@ Rota Planejador::getRota(const IDRota &Id) const
 
 /// Noh: struct/classe dos elementos dos conjuntos de busca do algoritmo A*.
 /// Deve ser DECLARADA E IMPLEMENTADA inteiramente.
-/* ***********  /
-/  FALTA FAZER  /
-/  *********** */
+struct Noh
+{
+  IDPonto id_pt;
+  IDRota id_rt;
+  double g;
+  double h;
+
+  Noh() : id_pt(), id_rt(), g(0.0), h(0.0) {}
+
+  double f() const
+  {
+    return g + h;
+  }
+
+  bool operator==(const IDPonto &Id) const
+  {
+    return id_pt == Id;
+  }
+
+  bool operator<(const Noh &outro) const
+  {
+    return f() < outro.f();
+  }
+};
 
 /// Calcula o caminho mais curto no mapa entre origem e destino, usando o algoritmo A*
 /// Retorna o comprimento do caminho encontrado (<0 se nao existe caminho).
@@ -495,9 +517,135 @@ double Planejador::calculaCaminho(const IDPonto &id_origem,
     /  IMPLEMENTACAO DO ALGORITMO A*  /
     /  ***************************** */
 
-    /* ***********  /
-    /  FALTA FAZER  /
-    /  *********** */
+    // Conjuntos de busca.
+    list<Noh> Aberto;
+    vector<Noh> Fechado;
+
+    // Prepara o noh correspondente ao ponto de origem.
+    Noh atual;
+
+    atual.id_pt = id_origem;
+    atual.id_rt = IDRota();
+    atual.g = 0.0;
+    atual.h = pt_origem.distancia(pt_destino);
+
+    // A busca comeca apenas com a origem em Aberto.
+    Aberto.push_back(atual);
+
+    // CONTINUAR AQUI: laco principal do A*
+    while (!Aberto.empty())
+    {
+      // Retira o primeiro noh, que possui o menor custo total.
+      atual = Aberto.front();
+      Aberto.pop_front();
+
+      // Registra o noh analisado.
+      Fechado.push_back(atual);
+
+      // Encerra a busca quando o destino eh retirado de Aberto.
+      if (atual.id_pt == id_destino)
+        break;
+
+      // Localiza a primeira rota conectada ao ponto atual.
+      auto itr_rota = find(rotas.begin(), rotas.end(), atual.id_pt);
+
+      while (itr_rota != rotas.end())
+      {
+        // CONTINUAR AQUI: gerar e avaliar o sucessor desta rota
+
+        // Cria o sucessor na outra extremidade da rota.
+        Noh suc;
+
+        suc.id_pt = itr_rota->outraExtremidade(atual.id_pt);
+        suc.id_rt = itr_rota->id;
+
+        // Soma o comprimento desta rota ao custo ja percorrido.
+        suc.g = atual.g + itr_rota->comprimento;
+
+        // Calcula a estimativa da distancia restante.
+        Ponto pt_suc = getPonto(suc.id_pt);
+        suc.h = pt_suc.distancia(pt_destino);
+
+        // CONTINUAR AQUI: verificar o sucessor em Fechado e Aberto
+
+        bool inserir = true;
+
+        // Verifica se o ponto ja foi analisado.
+        auto itr_fechado = find(Fechado.begin(), Fechado.end(), suc.id_pt);
+
+        if (itr_fechado != Fechado.end())
+        {
+          inserir = false;
+        }
+        else
+        {
+          // Verifica se ja existe uma opcao para esse ponto em Aberto.
+          auto itr_aberto = find(Aberto.begin(), Aberto.end(), suc.id_pt);
+
+          if (itr_aberto != Aberto.end())
+          {
+            if (suc.f() < itr_aberto->f())
+            {
+              // Remove a opcao antiga, pois encontramos uma melhor.
+              Aberto.erase(itr_aberto);
+            }
+            else
+            {
+              // A opcao existente tem custo menor ou igual.
+              inserir = false;
+            }
+          }
+        }
+
+        if (inserir)
+        {
+          // Encontra o primeiro noh com custo maior que o do sucessor.
+          auto posicao = upper_bound(Aberto.begin(), Aberto.end(), suc);
+
+          // Insere antes dessa posicao, mantendo a ordem.
+          Aberto.insert(posicao, suc);
+        }
+
+        // Continua a busca a partir da rota seguinte.
+        ++itr_rota;
+        itr_rota = find(itr_rota, rotas.end(), atual.id_pt);
+      }
+    }
+
+    // CONTINUAR AQUI: registrar resultados e reconstruir o caminho
+
+    // Registra as quantidades finais dos conjuntos de busca.
+    NumAberto = static_cast<int>(Aberto.size());
+    NumFechado = static_cast<int>(Fechado.size());
+
+    if (atual.id_pt == id_destino)
+    {
+      // O custo passado do destino eh o comprimento total.
+      Compr = atual.g;
+
+      // Percorre o caminho de tras para frente.
+      while (atual.id_rt.valid())
+      {
+        C.push_front(Trecho(atual.id_rt, atual.id_pt));
+
+        // Recupera a rota usada para chegar ao ponto atual.
+        Rota rota_ant = getRota(atual.id_rt);
+
+        // A outra extremidade identifica o ponto antecessor.
+        IDPonto id_pt_ant = rota_ant.outraExtremidade(atual.id_pt);
+
+        // Recupera o noh do antecessor em Fechado.
+        auto itr_ant = find(Fechado.begin(), Fechado.end(), id_pt_ant);
+
+        if (itr_ant == Fechado.end())
+          throw 3;
+
+        atual = *itr_ant;
+      }
+
+      // Inclui a origem, que nao possui rota de chegada.
+      C.push_front(Trecho(IDRota(), atual.id_pt));
+    }
   }
   catch (int i)
   {

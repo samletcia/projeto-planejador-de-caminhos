@@ -2,14 +2,14 @@
 #define _PLANEJADOR_H_
 
 #include <string>
-#include <iostream>  /* istream, ostream */
-#include <utility>   /* pair */
+#include <iostream> /* istream, ostream */
+#include <utility>  /* pair */
 #include <deque>
 #include <vector>
 
 /* *************************
-   * CLASSE IDPONTO        *
-   ************************* */
+ * CLASSE IDPONTO        *
+ ************************* */
 
 /// Identificador de um Ponto
 /// NAO DEVE SER MODIFICADA
@@ -17,35 +17,36 @@ class IDPonto
 {
 private:
   std::string t;
+
 public:
   // Construtor
-  IDPonto(): t("") {}
+  IDPonto() : t("") {}
   // Atribuicao de string
-  void set(std::string&& S);
+  void set(std::string &&S);
   // Teste de validade
   bool valid() const
   {
-    return (t.size()>=2 && t[0]=='#');
+    return (t.size() >= 2 && t[0] == '#');
   }
   // Comparacao
-  friend inline bool operator==(const IDPonto& ID1, const IDPonto& ID2)
+  friend inline bool operator==(const IDPonto &ID1, const IDPonto &ID2)
   {
-    return ID1.t==ID2.t;
+    return ID1.t == ID2.t;
   }
-  friend inline bool operator!=(const IDPonto& ID1, const IDPonto& ID2)
+  friend inline bool operator!=(const IDPonto &ID1, const IDPonto &ID2)
   {
-    return ID1.t!=ID2.t;
+    return ID1.t != ID2.t;
   }
   // Impressao
-  friend std::ostream& operator<<(std::ostream& X, const IDPonto& ID)
+  friend std::ostream &operator<<(std::ostream &X, const IDPonto &ID)
   {
-    return X<<ID.t;
+    return X << ID.t;
   }
 };
 
 /* *************************
-   * CLASSE IDROTA         *
-   ************************* */
+ * CLASSE IDROTA         *
+ ************************* */
 
 /// Identificador de uma Rota
 /// NAO DEVE SER MODIFICADA
@@ -53,72 +54,73 @@ class IDRota
 {
 private:
   std::string t;
+
 public:
   // Construtor
-  IDRota(): t("") {}
+  IDRota() : t("") {}
   // Atribuicao de string temporaria
-  void set(std::string&& S);
+  void set(std::string &&S);
   // Teste de validade
   bool valid() const
   {
-    return (t.size()>=2 && t[0]=='&');
+    return (t.size() >= 2 && t[0] == '&');
   }
   // Comparacao
-  friend inline bool operator==(const IDRota& ID1, const IDRota& ID2)
+  friend inline bool operator==(const IDRota &ID1, const IDRota &ID2)
   {
-    return ID1.t==ID2.t;
+    return ID1.t == ID2.t;
   }
-  friend inline bool operator!=(const IDRota& ID1, const IDRota& ID2)
+  friend inline bool operator!=(const IDRota &ID1, const IDRota &ID2)
   {
-    return ID1.t!=ID2.t;
+    return ID1.t != ID2.t;
   }
   // Impressao
-  friend std::ostream& operator<<(std::ostream& X, const IDRota& ID)
+  friend std::ostream &operator<<(std::ostream &X, const IDRota &ID)
   {
-    return X<<ID.t;
+    return X << ID.t;
   }
 };
 
 /* *************************
-   * CLASSE PONTO          *
-   ************************* */
+ * CLASSE PONTO          *
+ ************************* */
 
 /// Um ponto no mapa
 /// Pode receber ACRESCIMOS (nao modificacoes, supressoes)
 struct Ponto
 {
-  IDPonto id;        // Identificador do ponto
-  std::string nome;  // Denominacao usual do ponto
-  double latitude;   // Em graus: -90 polo sul, +90 polo norte
-  double longitude;  // Em graus: de -180 a +180 (positivos a leste de Greenwich,
-                     //                           negativos a oeste de Greenwich)
+  IDPonto id;       // Identificador do ponto
+  std::string nome; // Denominacao usual do ponto
+  double latitude;  // Em graus: -90 polo sul, +90 polo norte
+  double longitude; // Em graus: de -180 a +180 (positivos a leste de Greenwich,
+                    //                           negativos a oeste de Greenwich)
   // Construtor default
-  Ponto(): id(), nome(""), latitude(0.0), longitude(0.0) {}
+  Ponto() : id(), nome(""), latitude(0.0), longitude(0.0) {}
   // Teste de validade
   bool valid() const
   {
-    return id.valid() && nome.size()>=2 &&
-           latitude>=-90.0 && latitude<=90.00 &&
-           longitude>=-180.0 && longitude<=180.0;
+    return id.valid() && nome.size() >= 2 &&
+           latitude >= -90.0 && latitude <= 90.00 &&
+           longitude >= -180.0 && longitude <= 180.0;
   }
 
   // Impressao em console
-  friend std::ostream& operator<<(std::ostream& X, const Ponto& P);
+  friend std::ostream &operator<<(std::ostream &X, const Ponto &P);
 
   // Sobrecarga de operadores
   // Utilizados pelos algoritmos STL
-  bool operator==(const IDPonto& Id) const
+  bool operator==(const IDPonto &Id) const
   {
-  return id == Id;
+    return id == Id;
   }
 
   // Distancia entre 2 pontos (formula de haversine)
-  double distancia(const Ponto& P) const;
+  double distancia(const Ponto &P) const;
 };
 
 /* *************************
-   * CLASSE ROTA           *
-   ************************* */
+ * CLASSE ROTA           *
+ ************************* */
 
 /// Uma rota no mapa
 /// Pode receber ACRESCIMOS (nao modificacoes, supressoes)
@@ -130,32 +132,37 @@ struct Rota
   double comprimento;     // Comprimento da rota (em km)
 
   // Construtor default
-  Rota(): id(), nome(""), extremidade(), comprimento(0.0) {}
+  Rota() : id(), nome(""), extremidade(), comprimento(0.0) {}
   // Teste de validade
   bool valid() const
   {
-    return id.valid() && nome.size()>=2 && comprimento>0.0 &&
+    return id.valid() && nome.size() >= 2 && comprimento > 0.0 &&
            extremidade[0].valid() && extremidade[1].valid();
   }
 
   // Impressao em console
-  friend std::ostream& operator<<(std::ostream& X, const Rota& R);
+  friend std::ostream &operator<<(std::ostream &X, const Rota &R);
 
   // Sobrecarga de operadores
   // Utilizados pelos algoritmos STL
-  bool operator==(const IDRota& Id) const
+  bool operator==(const IDRota &Id) const
   {
-  return id == Id;
+    return id == Id;
+  }
+
+  bool operator==(const IDPonto &Id) const
+  {
+    return extremidade[0] == Id || extremidade[1] == Id;
   }
 
   // Retorna a outra extremidade da rota, a que nao eh o parametro.
   // Gera excecao se o parametro nao for uma das extremidades da rota.
-  IDPonto outraExtremidade(const IDPonto& ID) const;
+  IDPonto outraExtremidade(const IDPonto &ID) const;
 };
 
 /* *************************
-   * CLASSE CAMINHO        *
-   ************************* */
+ * CLASSE CAMINHO        *
+ ************************* */
 
 /// Um caminho encontrado entre dois pontos: uma pilha de Trechos.
 /// Cada Trecho eh um par <IDRota,IDPonto>.
@@ -164,12 +171,12 @@ struct Rota
 /// Cada Trecho, exceto o primeiro, eh composto pela rota que trouxe do
 /// elemento anterior ateh ele e pelo ponto que faz parte do caminho.
 /// NAO DEVEM SER MODIFICADAS
-using Trecho = std::pair<IDRota,IDPonto>;
+using Trecho = std::pair<IDRota, IDPonto>;
 using Caminho = std::deque<Trecho>;
 
 /* *************************
-   * CLASSE PLANEJADOR     *
-   ************************* */
+ * CLASSE PLANEJADOR     *
+ ************************* */
 
 /// A classe que armazena os pontos e as rotas do mapa do Planejador
 /// e calcula caminho mais curto entre pontos.
@@ -182,14 +189,14 @@ private:
 
 public:
   // Cria um mapa vazio
-  Planejador(): pontos(), rotas() {}
+  Planejador() : pontos(), rotas() {}
 
   // Cria um mapa com o conteudo dos arquivos arq_pontos e arq_rotas.
   // Gera excecao em caso de arquivos invalidos.
-  Planejador(const std::string& arq_pontos,
-             const std::string& arq_rotas): Planejador()
+  Planejador(const std::string &arq_pontos,
+             const std::string &arq_rotas) : Planejador()
   {
-    ler(arq_pontos,arq_rotas);
+    ler(arq_pontos, arq_rotas);
   }
 
   // Destrutor (nao eh obrigatorio...)
@@ -209,28 +216,28 @@ public:
 
   // Leh um mapa dos arquivos arq_pontos e arq_rotas.
   // Caso nao consiga ler dos arquivos, deixa o mapa inalterado e gera excecao ios_base::failure.
-  void ler(const std::string& arq_pontos,
-           const std::string& arq_rotas);
+  void ler(const std::string &arq_pontos,
+           const std::string &arq_rotas);
 
   // Consulta dimensoes do mapa
-  size_t getNumPontos() const {return pontos.size();}
-  size_t getNumRotas() const {return rotas.size();}
+  size_t getNumPontos() const { return pontos.size(); }
+  size_t getNumRotas() const { return rotas.size(); }
 
   // Retorna um Ponto do mapa, passando o indice como parametro.
   // Se o indice for invalido, a chamada ao "at" gera excecao.
-  Ponto getPonto(int I) const  {return pontos.at(I);}
+  Ponto getPonto(int I) const { return pontos.at(I); }
 
   // Retorna uma Rota do mapa, passando o indice como parametro.
   // Se o indice for invalido, a chamada ao "at" gera excecao.
-  Rota getRota(int I) const {return rotas.at(I);}
+  Rota getRota(int I) const { return rotas.at(I); }
 
   // Retorna um Ponto do mapa, passando a id como parametro.
   // Se a id for inexistente, gera excecao.
-  Ponto getPonto(const IDPonto& Id) const;
+  Ponto getPonto(const IDPonto &Id) const;
 
   // Retorna um Rota do mapa, passando a id como parametro.
   // Se a id for inexistente, gera excecao.
-  Rota getRota(const IDRota& Id) const;
+  Rota getRota(const IDRota &Id) const;
 
   // Calcula o caminho mais curto no mapa entre origem e destino, usando o algoritmo A*
   // Retorna o comprimento do caminho encontrado (<0 se nao existe caminho).
@@ -240,9 +247,9 @@ public:
   // O parametro NumFechado retorna o numero de nos (>=0) em Fechado ao termino do algoritmo A*,
   // mesmo quando nao existe caminho.
   // Em caso de parametros de entrada invalidos ou de erro no algoritmo, gera excecao.
-  double calculaCaminho(const IDPonto& id_origem,
-                        const IDPonto& id_destino,
-                        Caminho& C, int& NumAberto, int& NumFechado);
+  double calculaCaminho(const IDPonto &id_origem,
+                        const IDPonto &id_destino,
+                        Caminho &C, int &NumAberto, int &NumFechado);
 };
 
 #endif // _PLANEJADOR_H_
