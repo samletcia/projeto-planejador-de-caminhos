@@ -1,0 +1,2 @@
+ID;Nome;Extremidade 1;Extremidade 2;Comprimento
+&R1;Rota 1;&1;#2;7.8
