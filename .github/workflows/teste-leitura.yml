@@ -67,3 +67,14 @@ jobs:
 
       - name: Executar teste de formato
         run: ./build/teste-formato
+      - name: Testar aplicativo com o mapa real
+        run: |
+          printf '3\n#1\n#18\n3\n#1\n#0\n0\n' \
+            | timeout 15s ./build/planejador \
+            | tee build/resultado-aplicativo.txt
+
+          grep -Fq 'TOTAL: 381.4km' build/resultado-aplicativo.txt
+          grep -Fq 'TOTAL: -1km' build/resultado-aplicativo.txt
+          grep -Fq 'Nenhum caminho foi encontrado' build/resultado-aplicativo.txt
+
+          echo "OK: aplicativo validado nos dois casos do mapa real."
