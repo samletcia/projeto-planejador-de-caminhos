@@ -19,6 +19,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add option="-std=c++11" />
 		</Compiler>
 		<Unit filename="planejador-main.cpp" />
 		<Unit filename="planejador.cpp" />
