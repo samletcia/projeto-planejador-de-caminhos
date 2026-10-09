@@ -1,0 +1,16 @@
+# Pastas geradas pela compilacao
+build/
+bin/
+obj/
+
+# Compilador portatil
+.tools/
+
+# Executaveis e arquivos intermediarios
+*.exe
+*.o
+*.obj
+
+# Arquivos locais gerados pelo Code::Blocks
+*.depend
+*.layout
