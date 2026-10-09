@@ -58,3 +58,12 @@ jobs:
 
       - name: Executar teste de caminhos
         run: ./build/teste-caminhos
+
+      - name: Compilar teste de formato
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic \
+            planejador.cpp teste-formato.cpp \
+            -o build/teste-formato
+
+      - name: Executar teste de formato
+        run: ./build/teste-formato

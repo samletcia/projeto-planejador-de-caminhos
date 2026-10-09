@@ -224,6 +224,12 @@ void Planejador::ler(const std::string &arq_pontos,
       if (!(arquivo >> P.longitude))
         throw 7;
 
+      // Exige um separador entre registros, ou o fim do arquivo.
+      int proximo = arquivo.peek();
+
+      if (proximo != char_traits<char>::eof() && !isspace(proximo))
+        throw 7;
+
       // Prepara a stream para o proximo registro.
       arquivo >> ws;
 
@@ -364,6 +370,12 @@ void Planejador::ler(const std::string &arq_pontos,
 
       // Le o comprimento da rota.
       if (!(arquivo >> R.comprimento))
+        throw 7;
+        
+      // Exige um separador entre registros, ou o fim do arquivo.
+      int proximo = arquivo.peek();
+
+      if (proximo != char_traits<char>::eof() && !isspace(proximo))
         throw 7;
 
       arquivo >> ws;
